@@ -33,9 +33,9 @@ void parseArguments(int argc, char **argv, ScannerConfig &config) {
   }
 }
 
-int main(int argc, char **argv) {
+int main(const int argc, char **argv) {
   // Load defaults (eventually from SQRLL_INI_Reader)
-  ScannerConfig config = loadConfigFromIni("scanner.ini");
+  ScannerConfig config = loadConfigFromIni("Scanner.ini");
 
   // Override with command line arguments
   parseArguments(argc, argv, config);
