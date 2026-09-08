@@ -7,7 +7,9 @@
 #include "PortScanner.h"
 
 /** Overrides configuration based on command line arguments */
-void parseArguments(int argc, char **argv, ScannerConfig &config) {
+bool parseArguments(int argc, char **argv, ScannerConfig &config) {
+  bool hasArgs = (argc > 1);
+
   for (int i = 1; i < argc; ++i) {
     std::string arg = argv[i];
 
@@ -31,6 +33,8 @@ void parseArguments(int argc, char **argv, ScannerConfig &config) {
       }
     }
   }
+
+  return hasArgs;
 }
 
 int main(const int argc, char **argv) {
@@ -38,28 +42,21 @@ int main(const int argc, char **argv) {
   ScannerConfig config = loadConfigFromIni("Scanner.ini");
 
   // Override with command line arguments
-  parseArguments(argc, argv, config);
+  // If any CLI args are present, disable progress output
+  bool hadCliArgs = parseArguments(argc, argv, config);
+  if (hadCliArgs) {
+    config.showProgress = false;
+  }
 
   std::cout << "Starting scan on " << config.targetIp << "...\n";
   std::cout << "Protocols: " << (config.scanTcp ? "TCP " : "")
             << (config.scanUdp ? "UDP" : "") << "\n";
   std::cout << "Timeouts: TCP=" << config.tcpTimeoutMs
             << "ms, UDP=" << config.udpTimeoutMs << "ms\n";
+  std::cout << "Max in-flight per thread: " << config.maxInFlight << "\n";
 
   PortScanner scanner(config);
   std::vector<PortScanResult> results = scanner.run();
-
-  for (const auto &pr : results) {
-    std::string protoStr = (pr.protocol == Protocol::TCP) ? "TCP" : "UDP";
-    std::cout << "[+] Port " << pr.port << "/" << protoStr
-              << " is OPEN|FILTERED (" << pr.serviceName << ")";
-
-    if (!pr.banner.empty()) {
-      std::cout << " -> Banner: [" << pr.banner << "]";
-    }
-
-    std::cout << "\n";
-  }
 
   return 0;
 }

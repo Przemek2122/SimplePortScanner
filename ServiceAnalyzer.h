@@ -63,8 +63,8 @@ private:
   }
 
   static void sendHttpProbe(int sockfd) {
-    std::string probe = "HEAD / HTTP/1.0\r\n\r\n";
-    send(sockfd, probe.c_str(), probe.length(), 0);
+    const std::string probe = "HEAD / HTTP/1.0\r\n\r\n";
+    send(sockfd, probe.c_str(), probe.length(), MSG_NOSIGNAL);
   }
 
   static std::string cleanBannerString(const std::string &raw) {
